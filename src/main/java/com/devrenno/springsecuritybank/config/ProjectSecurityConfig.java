@@ -1,5 +1,7 @@
 package com.devrenno.springsecuritybank.config;
 
+import com.devrenno.springsecuritybank.exceptionhandling.CustomAccessDeniedHandler;
+import com.devrenno.springsecuritybank.exceptionhandling.CustomBasicAuthenticationEntryPoint;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -17,13 +19,16 @@ public class ProjectSecurityConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         // http.authorizeHttpRequests(requests -> requests.anyRequest().permitAll());
         // http.authorizeHttpRequests(requests -> requests.anyRequest().denyAll());
+
         http.csrf(csrf -> csrf.disable());
         http.authorizeHttpRequests(requests -> requests
                 .requestMatchers("/myAccount", "/myBalance", "/myLoans", "/myCards").authenticated()
                 .requestMatchers("/notices", "/contact", "/error", "/register").permitAll());
         //http.formLogin(form -> form.disable());
         http.formLogin(Customizer.withDefaults());
-        http.httpBasic(Customizer.withDefaults());
+        http.httpBasic(hbc -> hbc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
+        //http.exceptionHandling(ehc -> ehc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));
+        http.exceptionHandling(ehc -> ehc.accessDeniedHandler(new CustomAccessDeniedHandler()));
         return http.build();
     }
 

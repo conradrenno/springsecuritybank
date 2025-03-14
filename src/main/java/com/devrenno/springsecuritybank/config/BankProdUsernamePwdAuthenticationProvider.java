@@ -27,8 +27,8 @@ public class BankProdUsernamePwdAuthenticationProvider implements Authentication
         String username = authentication.getName();
         String password = authentication.getCredentials().toString();
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-        if (passwordEncoder.matches(password, userDetails.getPassword())){
-            return new UsernamePasswordAuthenticationToken(username,password,userDetails.getAuthorities());
+        if (passwordEncoder.matches(password, userDetails.getPassword())) {
+            return new UsernamePasswordAuthenticationToken(username, password, userDetails.getAuthorities());
             // Perform additional validation for authenticating the user
         } else {
             throw new BadCredentialsException("Invalid Password!");

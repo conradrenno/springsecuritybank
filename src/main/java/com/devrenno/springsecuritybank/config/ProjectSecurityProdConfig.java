@@ -19,11 +19,12 @@ public class ProjectSecurityProdConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         // http.authorizeHttpRequests(requests -> requests.anyRequest().permitAll());
         // http.authorizeHttpRequests(requests -> requests.anyRequest().denyAll());
+        http.sessionManagement(session -> session.invalidSessionUrl("/invalidSession").maximumSessions(3).maxSessionsPreventsLogin(true));
         http.requiresChannel(channel -> channel.anyRequest().requiresSecure())
                 .csrf(csrf -> csrf.disable());
         http.authorizeHttpRequests(requests -> requests
                 .requestMatchers("/myAccount", "/myBalance", "/myLoans", "/myCards").authenticated()
-                .requestMatchers("/notices", "/contact", "/error", "/register").permitAll());
+                .requestMatchers("/notices", "/contact", "/error", "/register", "/invalidSession").permitAll());
         //http.formLogin(form -> form.disable());
         http.formLogin(Customizer.withDefaults());
         http.httpBasic(hbc -> hbc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));

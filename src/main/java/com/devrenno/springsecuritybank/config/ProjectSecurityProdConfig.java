@@ -2,15 +2,20 @@ package com.devrenno.springsecuritybank.config;
 
 import com.devrenno.springsecuritybank.exceptionhandling.CustomAccessDeniedHandler;
 import com.devrenno.springsecuritybank.exceptionhandling.CustomBasicAuthenticationEntryPoint;
+import com.devrenno.springsecuritybank.filter.CsrfCookieFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
@@ -22,9 +27,10 @@ public class ProjectSecurityProdConfig {
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        // http.authorizeHttpRequests(requests -> requests.anyRequest().permitAll());
-        // http.authorizeHttpRequests(requests -> requests.anyRequest().denyAll());
-        http.cors(corsconfig -> corsconfig.configurationSource(new CorsConfigurationSource() {
+        CsrfTokenRequestAttributeHandler csrfTokenRequestAttributeHandler = new CsrfTokenRequestAttributeHandler();
+        http.securityContext(contextConfig -> contextConfig.requireExplicitSave(false))
+                .sessionManagement(sessionConfig -> sessionConfig.sessionCreationPolicy(SessionCreationPolicy.ALWAYS))
+                .cors(corsconfig -> corsconfig.configurationSource(new CorsConfigurationSource() {
                     @Override
                     public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
                         CorsConfiguration corsConfiguration = new CorsConfiguration();
@@ -36,11 +42,13 @@ public class ProjectSecurityProdConfig {
                         return corsConfiguration;
                     }
                 }))
-                .sessionManagement(session -> session.invalidSessionUrl("/invalidSession").maximumSessions(3).maxSessionsPreventsLogin(true));
-        http.requiresChannel(channel -> channel.anyRequest().requiresSecure())
-                .csrf(csrf -> csrf.disable());
+                .csrf(csrfConfig -> csrfConfig.csrfTokenRequestHandler(csrfTokenRequestAttributeHandler)
+                        .ignoringRequestMatchers("/contact", "/register")
+                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+                .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
+                .requiresChannel(channel -> channel.anyRequest().requiresInsecure());
         http.authorizeHttpRequests(requests -> requests
-                .requestMatchers("/myAccount", "/myBalance", "/myLoans", "/myCards").authenticated()
+                .requestMatchers("/myAccount", "/myBalance", "/myLoans", "/myCards", "/user").authenticated()
                 .requestMatchers("/notices", "/contact", "/error", "/register", "/invalidSession").permitAll());
         //http.formLogin(form -> form.disable());
         http.formLogin(Customizer.withDefaults());

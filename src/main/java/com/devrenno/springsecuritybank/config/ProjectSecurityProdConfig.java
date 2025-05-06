@@ -34,7 +34,7 @@ public class ProjectSecurityProdConfig {
                     @Override
                     public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
                         CorsConfiguration corsConfiguration = new CorsConfiguration();
-                        corsConfiguration.setAllowedOrigins(Collections.singletonList("http://localhost:4200"));
+                        corsConfiguration.setAllowedOrigins(Collections.singletonList("https://localhost:4200"));
                         corsConfiguration.setAllowedMethods(Collections.singletonList("*"));
                         corsConfiguration.setAllowedHeaders(Collections.singletonList("*"));
                         corsConfiguration.setAllowCredentials(true);
@@ -46,9 +46,19 @@ public class ProjectSecurityProdConfig {
                         .ignoringRequestMatchers("/contact", "/register")
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
                 .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
-                .requiresChannel(channel -> channel.anyRequest().requiresInsecure());
+                .requiresChannel(channel -> channel.anyRequest().requiresSecure());
         http.authorizeHttpRequests(requests -> requests
-                .requestMatchers("/myAccount", "/myBalance", "/myLoans", "/myCards", "/user").authenticated()
+//                .requestMatchers("/myAccount").hasAuthority("VIEWACCOUNT")
+//                .requestMatchers("/myBalance").hasAnyAuthority("VIEWBALANCE", "VIEWACCOUNT")
+//                .requestMatchers("/myLoans").hasAuthority("VIEWLOANS")
+//                .requestMatchers("/myCards").hasAuthority("VIEWCARDS")
+//                .requestMatchers("/user").authenticated()
+//                .requestMatchers("/notices", "/contact", "/error", "/register", "/invalidSession").permitAll());
+                .requestMatchers("/myAccount").hasRole("USER") // Prefix ROLE_ automatically added by Spring Security
+                .requestMatchers("/myBalance").hasAnyRole("USER", "ADMIN")
+                .requestMatchers("/myLoans").hasRole("USER")
+                .requestMatchers("/myCards").hasRole("USER")
+                .requestMatchers("/user").authenticated()
                 .requestMatchers("/notices", "/contact", "/error", "/register", "/invalidSession").permitAll());
         //http.formLogin(form -> form.disable());
         http.formLogin(Customizer.withDefaults());

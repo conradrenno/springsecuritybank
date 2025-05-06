@@ -48,7 +48,15 @@ public class ProjectSecurityConfig {
                 .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
                 .requiresChannel(rcc -> rcc.anyRequest().requiresInsecure()); //HTTP ONLY
         http.authorizeHttpRequests(requests -> requests
-                .requestMatchers("/myAccount", "/myBalance", "/myLoans", "/myCards", "/user").authenticated()
+//                .requestMatchers("/myAccount").hasAuthority("VIEWACCOUNT")
+//                .requestMatchers("/myBalance").hasAnyAuthority("VIEWBALANCE", "VIEWACCOUNT")
+//                .requestMatchers("/myLoans").hasAuthority("VIEWLOANS")
+//                .requestMatchers("/myCards").hasAuthority("VIEWCARDS")
+                .requestMatchers("/myAccount").hasRole("USER") // Prefix ROLE_ automatically added by Spring Security
+                .requestMatchers("/myBalance").hasAnyRole("USER", "ADMIN")
+                .requestMatchers("/myLoans").hasRole("USER")
+                .requestMatchers("/myCards").hasRole("USER")
+                .requestMatchers("/user").authenticated()
                 .requestMatchers("/notices", "/contact", "/error", "/register", "/invalidSession").permitAll());
         http.formLogin(Customizer.withDefaults());
         http.httpBasic(hbc -> hbc.authenticationEntryPoint(new CustomBasicAuthenticationEntryPoint()));

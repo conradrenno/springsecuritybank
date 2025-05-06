@@ -2,6 +2,7 @@ package com.devrenno.springsecuritybank.config;
 
 import com.devrenno.springsecuritybank.exceptionhandling.CustomAccessDeniedHandler;
 import com.devrenno.springsecuritybank.exceptionhandling.CustomBasicAuthenticationEntryPoint;
+import com.devrenno.springsecuritybank.filter.AuthoritiesLoggingAfterFilter;
 import com.devrenno.springsecuritybank.filter.CsrfCookieFilter;
 import com.devrenno.springsecuritybank.filter.RequestValidationBeforeFilter;
 import jakarta.servlet.http.HttpServletRequest;
@@ -48,6 +49,7 @@ public class ProjectSecurityConfig {
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
                 .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
                 .addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class)
+                .addFilterAfter(new AuthoritiesLoggingAfterFilter(), BasicAuthenticationFilter.class)
                 .requiresChannel(rcc -> rcc.anyRequest().requiresInsecure()); //HTTP ONLY
         http.authorizeHttpRequests(requests -> requests
 //                .requestMatchers("/myAccount").hasAuthority("VIEWACCOUNT")

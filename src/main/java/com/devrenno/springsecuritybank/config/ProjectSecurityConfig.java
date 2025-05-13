@@ -2,9 +2,7 @@ package com.devrenno.springsecuritybank.config;
 
 import com.devrenno.springsecuritybank.exceptionhandling.CustomAccessDeniedHandler;
 import com.devrenno.springsecuritybank.exceptionhandling.CustomBasicAuthenticationEntryPoint;
-import com.devrenno.springsecuritybank.filter.AuthoritiesLoggingAfterFilter;
-import com.devrenno.springsecuritybank.filter.CsrfCookieFilter;
-import com.devrenno.springsecuritybank.filter.RequestValidationBeforeFilter;
+import com.devrenno.springsecuritybank.filter.*;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,6 +19,7 @@ import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 @Configuration
@@ -30,8 +29,7 @@ public class ProjectSecurityConfig {
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         CsrfTokenRequestAttributeHandler csrfTokenRequestAttributeHandler = new CsrfTokenRequestAttributeHandler();
-        http.securityContext(contextConfig -> contextConfig.requireExplicitSave(false))
-                .sessionManagement(sessionConfig -> sessionConfig.sessionCreationPolicy(SessionCreationPolicy.ALWAYS))
+        http.sessionManagement(sessionConfig -> sessionConfig.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .cors(corsConfig -> corsConfig.configurationSource(new CorsConfigurationSource() {
                     @Override
                     public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
@@ -39,6 +37,7 @@ public class ProjectSecurityConfig {
                         corsConfiguration.setAllowedOrigins(Collections.singletonList("http://localhost:4200"));
                         corsConfiguration.setAllowedMethods(Collections.singletonList("*"));
                         corsConfiguration.setAllowedHeaders(Collections.singletonList("*"));
+                        corsConfiguration.setExposedHeaders(Arrays.asList("Authorization"));
                         corsConfiguration.setAllowCredentials(true);
                         corsConfiguration.setMaxAge(3600L);
                         return corsConfiguration;
@@ -50,6 +49,8 @@ public class ProjectSecurityConfig {
                 .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
                 .addFilterBefore(new RequestValidationBeforeFilter(), BasicAuthenticationFilter.class)
                 .addFilterAfter(new AuthoritiesLoggingAfterFilter(), BasicAuthenticationFilter.class)
+                .addFilterAfter(new JWTTokenGeneratorFilter(), BasicAuthenticationFilter.class)
+                .addFilterBefore(new JWTTokenValidatorFilter(), BasicAuthenticationFilter.class)
                 .requiresChannel(rcc -> rcc.anyRequest().requiresInsecure()); //HTTP ONLY
         http.authorizeHttpRequests(requests -> requests
 //                .requestMatchers("/myAccount").hasAuthority("VIEWACCOUNT")

@@ -1,0 +1,7 @@
+package com.devrenno.springsecuritybank.constants;
+
+public class ApplicationConstants {
+    public static final String JTW_SECRET_KEY = "JWT_SECRET";
+    public static final String JTW_SECRET_DEFAULT_VALUE = "jxgEQeXHuPq8VdbyYFNkANdudQ53YUn4";
+    public static final String JWT_HEADER = "Authorization";
+}

@@ -64,7 +64,7 @@ public class ProjectSecurityProdConfig {
 //                .requestMatchers("/notices", "/contact", "/error", "/register", "/invalidSession").permitAll());
                 .requestMatchers("/myAccount").hasRole("USER") // Prefix ROLE_ automatically added by Spring Security
                 .requestMatchers("/myBalance").hasAnyRole("USER", "ADMIN")
-                .requestMatchers("/myLoans").hasRole("USER")
+                .requestMatchers("/myLoans").authenticated()
                 .requestMatchers("/myCards").hasRole("USER")
                 .requestMatchers("/user").authenticated()
                 .requestMatchers("/notices", "/contact", "/error", "/register", "/invalidSession", "/apiLogin").permitAll());
